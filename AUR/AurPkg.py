@@ -25,25 +25,23 @@ import XCPF.ArchPkg
 
 # ---------------------------------- PkgSet ---------------------------------- #
 
-class AurPkgSet(XCPF.ArchPkg.PkgSet):
 
+class AurPkgSet(XCPF.ArchPkg.PkgSet):
     def __init__(self, pkgs=None):
-        accessors = {
-            'name': lambda x: x['Name'],
-            'version': lambda x: x['Version']
-        }
+        accessors = {"name": lambda x: x["Name"], "version": lambda x: x["Version"]}
         super(self.__class__, self).__init__(accessors, pkgs=pkgs)
 
 
 # ---------------------------- Buildable Packages ---------------------------- #
 
+
 class AurBuildablePkgFactory(XCPF.ArchPkg.BuildablePkgFactory):
-    '''
+    """
     Wrapper class to convert AUR packages to AurBuildablePkgs.
 
     arch: Target architecture.
     asi: AUR.SRCINFO.AurSrcinfo instance.
-    '''
+    """
 
     def __init__(self, arch, *args, asi=None, **kwargs):
         self.arch = arch
@@ -71,14 +69,13 @@ class AurBuildablePkg(XCPF.ArchPkg.BuildablePkg):
     def get_srcinfo(self):
         if self.srcinfo is None:
             try:
-                pkgbases_and_pkgnames = ((self.pkg['PackageBase'], self.pkg['Name']),)
+                pkgbases_and_pkgnames = ((self.pkg["PackageBase"], self.pkg["Name"]),)
                 for si in self.asi.get_pkginfo(pkgbases_and_pkgnames):
                     self.srcinfo = si
                     break
             except urllib.error.HTTPError as e:
                 raise XCPF.ArchPkg.BuildablePkgError(
-                    'failed to retrieve .SRCINFO for {}'.format(self.pkg.name),
-                    error=e
+                    "failed to retrieve .SRCINFO for {}".format(self.pkg.name), error=e
                 )
         return self.srcinfo
 
@@ -86,36 +83,36 @@ class AurBuildablePkg(XCPF.ArchPkg.BuildablePkg):
         return True
 
     def maintainers(self):
-        m = self.pkg['Maintainer']
+        m = self.pkg["Maintainer"]
         if m:
             yield m
 
     def pkgname(self):
-        return self.pkg.get('Name')
+        return self.pkg.get("Name")
 
     def version(self):
-        return self.pkg.get('Version')
+        return self.pkg.get("Version")
 
     def pkgbase(self):
-        return self.pkg.get('PackageBase')
+        return self.pkg.get("PackageBase")
 
     def repo(self):
-        return 'AUR'
+        return "AUR"
 
     def last_modified(self):
-        return self.pkg.get('LastModified')
+        return self.pkg.get("LastModified")
 
     def last_packager(self):
-        return self.pkg.get('LastPackager')
+        return self.pkg.get("LastPackager")
 
     def with_arch_deps(self, field):
         # for SRCINFO
         field = field.lower()
         srcinfo = self.get_srcinfo()
-        if self.arch == 'any':
+        if self.arch == "any":
             fields = [field]
         else:
-            fields = [field, '{}_{}'.format(field, self.arch)]
+            fields = [field, "{}_{}".format(field, self.arch)]
 
         for f in fields:
             try:
@@ -126,10 +123,10 @@ class AurBuildablePkg(XCPF.ArchPkg.BuildablePkg):
                 continue
 
     def deps(self):
-        return self.with_arch_deps('Depends')
+        return self.with_arch_deps("Depends")
 
     def makedeps(self):
-        return self.with_arch_deps('MakeDepends')
+        return self.with_arch_deps("MakeDepends")
 
     def checkdeps(self):
-        return self.with_arch_deps('CheckDepends')
+        return self.with_arch_deps("CheckDepends")

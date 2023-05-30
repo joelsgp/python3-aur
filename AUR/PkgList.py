@@ -33,81 +33,80 @@ import XCPF
 
 ################################## Constants ###################################
 
-PKGLIST_PATH = '/packages.gz'
+PKGLIST_PATH = "/packages.gz"
 PKGLIST_URL = AUR.common.AUR_URL + PKGLIST_PATH
-
 
 
 ################################## Functions ###################################
 
-def iterate_packages(path):
-  with gzip.open(path, 'rt') as f:
-    for line in f:
-      if line.startswith('#'):
-        continue
-      else:
-        yield line.strip()
 
+def iterate_packages(path):
+    with gzip.open(path, "rt") as f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            else:
+                yield line.strip()
 
 
 ################################### Classes ####################################
 
+
 class PkgList(object):
-  '''
-  A class to retrieve and iterate over the list of AUR packages.
-  '''
+    """
+    A class to retrieve and iterate over the list of AUR packages.
+    """
 
-  def __init__(self, path=None, ttl=AUR.common.DEFAULT_TTL, auto_refresh=False):
-    '''
-    path:
-      The local path under which to store the file.
+    def __init__(self, path=None, ttl=AUR.common.DEFAULT_TTL, auto_refresh=False):
+        """
+        path:
+          The local path under which to store the file.
 
-    ttl:
-      The time-to-live of the cached file. This is passed to XCGF.mirror as the
-      cache_time option.
+        ttl:
+          The time-to-live of the cached file. This is passed to XCGF.mirror as the
+          cache_time option.
 
-    auto_refresh:
-      If True, automatically refresh the file when needed.
-    '''
-    if not path:
-      cache_dir = xdg.BaseDirectory.save_cache_path(AUR.common.XDG_NAME)
-      path = os.path.join(cache_dir, os.path.basename(PKGLIST_PATH))
-    self.path = path
-    self.ttl = ttl
-    self.auto_refresh = auto_refresh
-    try:
-      self.last_refresh = os.path.getmtime(self.path)
-    except FileNotFoundError:
-      self.last_refresh = None
-
-
-
-  def refresh(self, force=False):
-    if force:
-      ttl = 0
-    else:
-      ttl = self.ttl
-    with XCGF.Lockfile(self.path + '.lck', 'PkgList') as p:
-      XCGF.mirror(PKGLIST_URL, self.path, cache_time=ttl)
-    self.last_refresh = time.time()
-
-
-
-  def __iter__(self):
-    if self.auto_refresh:
-      # Refresh the list if it hasn't been refreshed yet
-      if self.last_refresh is None \
-      or time.time() - self.last_refresh > (self.ttl if self.ttl > 0 else AUR.common.DEFAULT_TTL):
-        self.refresh()
-    try:
-      for p in iterate_packages(self.path):
-        yield p
-    except FileNotFoundError:
-      if self.auto_refresh:
-        logging.warning('previous PkgList auto-refresh failed, attempting to force a refresh')
-        self.refresh(force=True)
+        auto_refresh:
+          If True, automatically refresh the file when needed.
+        """
+        if not path:
+            cache_dir = xdg.BaseDirectory.save_cache_path(AUR.common.XDG_NAME)
+            path = os.path.join(cache_dir, os.path.basename(PKGLIST_PATH))
+        self.path = path
+        self.ttl = ttl
+        self.auto_refresh = auto_refresh
         try:
-          for p in iterate_packages(self.path):
-            yield p
+            self.last_refresh = os.path.getmtime(self.path)
         except FileNotFoundError:
-          pass
+            self.last_refresh = None
+
+    def refresh(self, force=False):
+        if force:
+            ttl = 0
+        else:
+            ttl = self.ttl
+        with XCGF.Lockfile(self.path + ".lck", "PkgList") as p:
+            XCGF.mirror(PKGLIST_URL, self.path, cache_time=ttl)
+        self.last_refresh = time.time()
+
+    def __iter__(self):
+        if self.auto_refresh:
+            # Refresh the list if it hasn't been refreshed yet
+            if self.last_refresh is None or time.time() - self.last_refresh > (
+                self.ttl if self.ttl > 0 else AUR.common.DEFAULT_TTL
+            ):
+                self.refresh()
+        try:
+            for p in iterate_packages(self.path):
+                yield p
+        except FileNotFoundError:
+            if self.auto_refresh:
+                logging.warning(
+                    "previous PkgList auto-refresh failed, attempting to force a refresh"
+                )
+                self.refresh(force=True)
+                try:
+                    for p in iterate_packages(self.path):
+                        yield p
+                except FileNotFoundError:
+                    pass

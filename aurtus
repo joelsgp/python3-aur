@@ -1,0 +1,39 @@
+#!python
+from AUR.Aurtomatic import Aurtomatic, AurtomaticError, CookieWrapper
+
+import argparse
+import sys
+import urllib.error
+
+parser = argparse.ArgumentParser(description='Retrieve the current list of trusted users (TUs) from the AUR.')
+
+parser.add_argument(
+  '-c', '--cookiejar', dest='cookiejar', metavar='<path>',
+  help='Specify the path of the cookie jar. The file follows the Netscape format.'
+)
+parser.add_argument(
+  '-j', '--jar', dest='cookie_action', choices=CookieWrapper.ACTIONS, default=CookieWrapper.ACTIONS[0],
+  help='What to do with the cookiejar. Default: %(default)s.'
+)
+parser.add_argument(
+  '-l', '--login', dest='login', metavar='<path>',
+  help='Read name and password from a file. The first line should contain the name and the second the password.'
+)
+
+def main(args=None):
+  pargs = parser.parse_args(args)
+  with CookieWrapper(
+    path=pargs.cookiejar, action=pargs.cookie_action, login_file=pargs.login
+  ) as aurt:
+    headers, accounts = aurt.search_accounts(typ='t', max_results=-1)
+  for a in accounts:
+    print(a[0])
+
+
+try:
+  main()
+except (KeyboardInterrupt, BrokenPipeError):
+  pass
+except (AurtomaticError, urllib.error.URLError) as e:
+  sys.stderr.write(str(e))
+  sys.exit(1)

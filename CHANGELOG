@@ -1,0 +1,63 @@
+# 2017-05-15
+* `AUR.RPC.download_git_repo` not logs warning or errors instead of raising `AurError` exceptions. All found packages are still iterated. Check that the list is complete if you need to detect errors.
+
+# 2016-04-04
+* Added AUR.AurPkg.
+* Tweaked RPC code to ensure generators.
+* Renamed AUR.RCP.AUR class to AUR.RPC.AurRpc to avoid name collisions and for clarity.
+* Added function to clone AUR git repos.
+
+# 2016-04-03
+* Update AUR.RPC to handle aurweb RPC Interface version 5.
+* Replace caching database functionality in AUR.RPC with MemoizeDB (major changes).
+* Update AUR.SRCINFO.
+
+# 2016-02-01
+* Handle 414 errors by splitting multiinfo queries.
+
+# 2016-01-30
+* Do not cache incomplete package info from search and msearch queries. Pass the search results to a multiinfo query instead.
+* Support maintainer searches via `None` and aurquery -m ''.
+
+# 2015-12-06
+* Renamed AUR.Aurploader to AUR.Aurtomatic along with internal Aurploader class and error.
+
+# 2015-12-04
+* Multiple changes for Bauerbill.
+* Added account search functions.
+* Added `aurtus` utility to query list of current TUs on AUR.
+* Added support for submitting keywords via `aurtomatic`.
+
+# 2015-07-11
+* Collect common constants and functions in AUR.common.
+* Added AUR.SRCINFO for parsing SRCINFO files.
+* Deprecated package uploading with `aurploader` due to move to SSH and Git in AUR 4.
+* Added `--comment` option to `aurtomatic`.
+
+# 2014-05-31
+* updated for AUR 3.0.0
+
+# 2013-03-08
+New actions:
+
+* adopt
+* disown
+* delete
+
+# 2013-03-03
+* logging now uses Python's `logging` module
+* replaced old %-formatting with new format syntax
+* fixed error when aurtomatic is invoked with no arguments
+
+# 2013-03-01
+* removed aurcomment script
+* added aurtomatic script (supports comments, votes, notifications, flagging, etc.)
+* added CookieWrapper context manager to Aurploader.py
+
+# 2013-02-04
+* fixed cookie bug
+
+# 2012-11-05
+* added Aurploader module to package
+* moved existing AUR module to AUR.RPC
+* included aurploader script

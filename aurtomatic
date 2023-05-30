@@ -1,0 +1,164 @@
+#!python
+from AUR.Aurtomatic import Aurtomatic, AurtomaticError, CookieWrapper, PACKAGE_ACTIONS, DO_ACTIONS, VALUE_ACTIONS, prompt_comment
+import argparse
+import subprocess
+import sys
+import urllib.error
+
+ACTIONS = sorted(PACKAGE_ACTIONS + VALUE_ACTIONS + DO_ACTIONS)
+
+
+parser = argparse.ArgumentParser(description='Post comments to the AUR.')
+parser.add_argument(
+  'pkgnames', metavar='<pkgname>', nargs='*'
+)
+parser.add_argument(
+  '-a', '--action', choices=ACTIONS, nargs='+', default=[],
+  help='Action(s) to perform for each specified package.'
+)
+parser.add_argument(
+  '--comment',
+  help='Post a comment without the interactive prompt.'
+)
+parser.add_argument(
+  '--comment-from-file', metavar='<path>',
+  help='Load a comment from a path without the interactive prompt.'
+)
+parser.add_argument(
+  '--keywords', nargs='*', metavar='KEYWORD',
+  help='Set keywords without the interactive prompt.'
+)
+parser.add_argument(
+  '-i', '--installed', action='store_true',
+  help='Perform action for all installed AUR packages. Use this to vote for the packages that you use and show support.'
+)
+parser.add_argument(
+  '-q', '--quiet', action='store_true',
+  help='Suppress output.'
+)
+
+group = parser.add_argument_group(
+  title='cookie-management arguments',
+)
+group.add_argument(
+  '-c', '--cookiejar', dest='cookiejar', metavar='<path>',
+  help='Specify the path of the cookie jar. The file follows the Netscape format.'
+)
+group.add_argument(
+  '-j', '--jar', dest='cookie_action', choices=CookieWrapper.ACTIONS, default=CookieWrapper.ACTIONS[0],
+  help='What to do with the cookiejar. Default: %(default)s.'
+)
+group.add_argument(
+  '-l', '--login', dest='login', metavar='<path>',
+  help='Read name and password from a file. The first line should contain the name and the second the password.'
+)
+
+group = parser.add_argument_group(
+  title='deletion arguments',
+)
+group.add_argument(
+  '--confirm', action='store_true',
+  help='Confirm deletion and other actions requiring additional confirmation.'
+)
+group.add_argument(
+  '--merge-into',
+  help='Merge target when deleting package.'
+)
+
+
+
+def unique(whatever):
+  seen = set()
+  if whatever:
+    for foo in whatever:
+      if foo not in seen:
+        yield foo
+        seen.add(foo)
+
+
+
+# Avoids the dependency on pyalpm and is probably simpler programmatically.
+def get_foreign():
+  cmd = ['pacman', '-Qqm']
+  try:
+    return subprocess.check_output(cmd).decode().strip().split('\n')
+  except subprocess.CalledProcessError as e:
+    sys.stderr.wrote(
+      'error: pacman exited with {:d} while querying foreign packages\n'.format(e.returncode)
+    )
+    sys.exit(1)
+
+
+
+def main(args=None):
+  pargs = parser.parse_args(args)
+  selected_actions = list(pargs.action)
+  # Flagging packages require comments as well since AUR 4.0.
+#   if pargs.comment and 'comment' not in selected_actions:
+#     selected_actions.append('comment')
+  if pargs.keywords is not None and 'setkeywords' not in selected_actions:
+    selected_actions.append('setkeywords')
+
+  # Ensure a fixed order so that e.g. a final comment is posted before the
+  # package is deleted. This also ensures that each element is unique.
+  actions = list(a for a in ACTIONS if a in selected_actions)
+
+
+  pkgs = list()
+  if pargs.pkgnames:
+    pkgs.extend(pargs.pkgnames)
+  if pargs.installed:
+    pkgs.extend(get_foreign())
+  if not pkgs:
+    sys.stderr.write('error: no packages selected\n')
+    sys.exit(1)
+
+  pkgs = list(unique(pkgs))
+
+
+
+  with CookieWrapper(
+    path=pargs.cookiejar, action=pargs.cookie_action, login_file=pargs.login
+  ) as aurt:
+
+    if not pargs.quiet:
+      headers = ('Package', 'Action')
+      w = max(len(x) for x in pkgs)
+      w = max(w, len(headers[0]))
+      fmt = '{:<' + str(w) + 's} {:s}'
+      print(fmt.format(*headers))
+
+    for pkginfo in aurt.rpc.info(pkgs):
+      for a in actions:
+        if not pargs.quiet:
+          if a == 'delete' and pargs.merge_into:
+            pa = 'merge into {}'.format(pargs.merge_into)
+          else:
+            pa = a
+          print(fmt.format(pkginfo['Name'], pa))
+        if a == 'comment':
+          if pargs.comment_from_file:
+            with open(pargs.comment_from_file, 'r') as f:
+              comment = f.read()
+          else:
+            comment = pargs.comment
+          aurt.submit_package_form(pkginfo, 'comment', value=comment)
+        elif a == 'setkeywords':
+          aurt.submit_package_form(pkginfo, 'setkeywords', value=pargs.keywords)
+        else:
+#           action = 'do_' + a.title()
+          aurt.submit_package_form(
+            pkginfo, a,
+            confirm=pargs.confirm,
+            merge_into=pargs.merge_into,
+            value=pargs.comment
+          )
+
+
+if __name__ == '__main__':
+  try:
+    main()
+  except (KeyboardInterrupt, BrokenPipeError):
+    pass
+  except (AurtomaticError, urllib.error.URLError) as e:
+    sys.exit(str(e))

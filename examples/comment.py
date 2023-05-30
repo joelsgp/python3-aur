@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
 from AUR.Aurtomatic import Aurtomatic, AurtomaticError, prompt_comment
 from sys import argv, stderr, exit
 

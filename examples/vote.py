@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+
 from AUR.Aurtomatic import Aurtomatic
 from sys import argv
 

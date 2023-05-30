@@ -1,4 +1,4 @@
-#!python
+#!/usr/bin/env python
 from AUR.Aurtomatic import Aurtomatic, AurtomaticError, CookieWrapper
 
 import argparse

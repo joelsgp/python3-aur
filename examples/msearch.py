@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 import AUR.RPC as AUR
 from sys import argv, exit

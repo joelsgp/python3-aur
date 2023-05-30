@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "AUR"
+version = "2021.11.20"
+description = "AUR-related modules and helper utilities (aurploader, aurquery, aurtomatic)."
+license = {file = "COPYING"}
+authors = [
+    {name = "Xyne", email = "xyne@archlinux.org"},
+]
+
+[project.urls]
+Home = "http://xyne.dev/projects/python3-aur"
+
+[project.scripts]
+aurpkglist = "aurpkglist"
+aurploder = "aurploder"
+aurquery = "aurquery"
+aurtomatic = "aurtomatic"
+aurtus = "aurtus"

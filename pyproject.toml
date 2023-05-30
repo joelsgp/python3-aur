@@ -10,9 +10,17 @@ license = {file = "COPYING"}
 authors = [
     {name = "Xyne", email = "xyne@archlinux.org"},
 ]
+dependencies = [
+    "pyalpm",
+    "pyxdg",
+    # https://aur.archlinux.org/packages/python3-xcgf
+    "xcgf",
+    # https://aur.archlinux.org/packages/python3-xcpf
+    "xcpf"
+]
 
 [project.urls]
-Home = "http://xyne.dev/projects/python3-aur"
+Home = "https://xyne.dev/projects/python3-aur"
 
 [project.scripts]
 aurpkglist = "aurpkglist"

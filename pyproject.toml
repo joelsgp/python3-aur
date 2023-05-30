@@ -6,7 +6,8 @@ build-backend = "setuptools.build_meta"
 name = "AUR"
 version = "2021.11.20"
 description = "AUR-related modules and helper utilities (aurploader, aurquery, aurtomatic)."
-license = {file = "COPYING"}
+readme = "README.md"
+license = {file = "LICENSE"}
 authors = [
     {name = "Xyne", email = "xyne@archlinux.org"},
 ]

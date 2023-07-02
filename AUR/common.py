@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 # Copyright (C) 2012-2015 Xyne
 #
 # This program is free software; you can redistribute it and/or
@@ -19,11 +16,11 @@
 
 ################################## Constants ###################################
 
-XDG_NAME = 'AUR'
-AUR_HOST = 'aur.archlinux.org'
-AUR_URL = 'https://' + AUR_HOST
+XDG_NAME = "AUR"
+AUR_HOST = "aur.archlinux.org"
+AUR_URL = "https://" + AUR_HOST
 # AUR_URL = 'https://aur-dev.archlinux.org'
-AUR_GIT_URL_FORMAT = AUR_URL + '/{}.git'
-AUR_SSH_GIT_URL = 'ssh+git://aur@' + AUR_HOST
+AUR_GIT_URL_FORMAT = AUR_URL + "/{}.git"
+AUR_SSH_GIT_URL = "ssh+git://aur@" + AUR_HOST
 
 DEFAULT_TTL = 15 * 60
